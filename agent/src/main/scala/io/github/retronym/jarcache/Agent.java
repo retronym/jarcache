@@ -6,13 +6,20 @@ import net.bytebuddy.matcher.ElementMatchers;
 
 import java.lang.instrument.Instrumentation;
 import java.nio.file.Path;
-import java.util.Objects;
 import java.util.regex.Pattern;
 
 import static net.bytebuddy.agent.builder.AgentBuilder.Listener.StreamWriting.*;
 
 public final class Agent {
-    private static boolean DEBUG = Boolean.getBoolean("io.github.retronym.jarcache.debug");
+    public static final String DEBUG_KEY = "io.github.retronym.jarcache.debug";
+    public static final String CACHABLE_REGEX_KEY = "io.github.retronym.jarcache.cacheableRegex";
+    private static boolean DEBUG = Boolean.getBoolean(DEBUG_KEY);
+
+    static {
+        setCacheableRegex(System.getProperty(CACHABLE_REGEX_KEY));
+    }
+
+    private static volatile Pattern cacheableRegex;
 
     public static void premain(String agentArgs, Instrumentation inst) {
         transform().installOn(inst);
@@ -21,7 +28,6 @@ public final class Agent {
     public static void installDynamically() {
         transform().installOnByteBuddyAgent();
     }
-    private static Pattern cacheableRegex;
 
     public static boolean isCacheable(Path path) {
         boolean result = isCacheableImpl(path);
@@ -35,19 +41,16 @@ public final class Agent {
         return result;
     }
 
-    private static boolean isCacheableImpl(Path path) {
-        String cacheableRegexString = System.getProperty("io.github.retronym.jarcache.cacheableRegex");
-        Pattern cacheableRegex = Agent.cacheableRegex;
-        if (cacheableRegexString == null || cacheableRegexString.isEmpty()) {
-            Agent.cacheableRegex = null;
-            return false;
-        } else {
-            if (cacheableRegex == null || Objects.equals(cacheableRegex.pattern(), cacheableRegexString)) {
-                cacheableRegex = Pattern.compile(cacheableRegexString);
-            }
-            Agent.cacheableRegex = cacheableRegex;
-            return cacheableRegex.matcher(path.toString()).matches();
+    public static void setCacheableRegex(String cacheableRegexString) {
+        if (cacheableRegexString == null) {
+            cacheableRegex = null;
+            return;
         }
+        cacheableRegex = Pattern.compile(cacheableRegexString);
+    }
+
+    private static boolean isCacheableImpl(Path path) {
+        return cacheableRegex != null && cacheableRegex.matcher(path.toString()).matches();
     }
 
     private static AgentBuilder.Identified.Extendable transform() {

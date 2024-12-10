@@ -19,18 +19,24 @@ Add `-XX:+EnableDynamicAgentLoading` to avoid warnings about dynamically attachi
 
 ```
 javacOptions += "-XX:+EnableDynamicAgentLoading" // to avoid warnings about dynamically attaching the agent.
-
 libraryDependencies += "io.github.retronym" % "jarcache-agent" % "X.Y.Z"
-
 libraryDependencies += "net.bytebuddy" % "byte-buddy-agent" % "1.15.10"
 ```
 
 In application code, prior to calling `javac`:
 
 ```java
-System.setProperty("io.github.retronym.jarcache.cacheableRegex", ".*/compileTest.*");
-net.bytebuddy.agent.ByteBuddyAgent.install();
-com.github.retronym.jarcache.Agent.installDynamically();
+import io.github.retronym.jarcache.Agent;
+import net.bytebuddy.agent.ByteBuddyAgent;
+
+class Main {
+  public static void main(String[] args) {
+      ByteBuddyAgent.install();
+      Agent.installDynamically();
+      Agent.setCacheableRegex(".*Caches/Coursier/v1/https/repo1.maven.org/(?!.*-SNAPSHOT).*");
+      // Call Javac
+  }
+}
 ```
 
 See `JarCacheAgentTest` in the demo project for an example.
@@ -51,7 +57,7 @@ myproject> sbt -J-javaagent:/Users/jz/code/jarcache/agent/target/agent-assembly-
    -J-Dio.github.retronym.jarcache.cacheableRegex='.*/Caches/Coursier/v1/https/repo1.maven.org/(?!.*-SNAPSHOT).*' \
    -J-Dio.github.retronym.jarcache.debug=true \
    compile
- 
+ x
 JARCACHE: Instrumenting with ByteBuddy
 JARCACHE: Instrumenting with ByteBuddy
 [info] welcome to sbt 1.10.6 (Azul Systems, Inc. Java 23.0.1)
