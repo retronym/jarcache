@@ -39,9 +39,8 @@ public class CachingJarFSProvider extends FileSystemProvider {
     public FileSystem newFileSystem(Path path, Map<String,?> env) throws IOException {
         if (Agent.isCacheable(path)) {
             CacheKey key = new CacheKey(path, env);
-            FileSystem fs = cache.computeIfAbsent(key,
+            return cache.computeIfAbsent(key,
                     k -> new NeverCloseZipFileSystem(this, delegateNewFileSystem(path, env)));
-            return fs;
         } else {
             return delegateNewFileSystem(path, env);
         }

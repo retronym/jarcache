@@ -18,7 +18,7 @@ public final class Agent {
     private static boolean DEBUG = Boolean.getBoolean("io.github.retronym.jarcache.debug");
 
     public static boolean isCacheable(Path path) {
-        boolean result = isCachableImpl(path);
+        boolean result = isCacheableImpl(path);
         if (DEBUG) {
             if (result) {
                 System.err.println("JARCACHE: Caching " + path);
@@ -29,7 +29,7 @@ public final class Agent {
         return result;
     }
 
-    private static boolean isCachableImpl(Path path) {
+    private static boolean isCacheableImpl(Path path) {
         String cacheableRegexString = System.getProperty("io.github.retronym.jarcache.cacheableRegex");
         Pattern cacheableRegex = Agent.cacheableRegex;
         if (cacheableRegexString == null || cacheableRegexString.isEmpty()) {
