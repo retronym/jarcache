@@ -11,9 +11,31 @@ This can be a non-trivial overhead, especially when the JAR is on a network file
 
 In practice, we can assume that certain JARs are immutable and can be cached.
 
-## Usage
-
 **WARNING**: This is a proof of concept. It is not production ready.
+
+## Usage as a dynamically attached agent
+
+Add `-XX:+EnableDynamicAgentLoading` to avoid warnings about dynamically attaching the agent.
+
+```
+javacOptions += "-XX:+EnableDynamicAgentLoading" // to avoid warnings about dynamically attaching the agent.
+
+libraryDependencies += "io.github.retronym" % "jarcache-agent" % "X.Y.Z"
+
+libraryDependencies += "net.bytebuddy" % "byte-buddy-agent" % "1.15.10"
+```
+
+In application code, prior to calling `javac`:
+
+```java
+System.setProperty("io.github.retronym.jarcache.cacheableRegex", ".*/compileTest.*");
+net.bytebuddy.agent.ByteBuddyAgent.install();
+com.github.retronym.jarcache.Agent.installDynamically();
+```
+
+See `JarCacheAgentTest` in the demo project for an example.
+
+## Usage as a Java Agent
 
 ### Build the agent
 ```

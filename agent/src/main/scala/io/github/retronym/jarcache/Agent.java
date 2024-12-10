@@ -9,13 +9,19 @@ import java.nio.file.Path;
 import java.util.Objects;
 import java.util.regex.Pattern;
 
+import static net.bytebuddy.agent.builder.AgentBuilder.Listener.StreamWriting.*;
+
 public final class Agent {
-    public static void premain(String agentArgs, Instrumentation instrumentation) {
-        getTransform().installOn(instrumentation);
+    private static boolean DEBUG = Boolean.getBoolean("io.github.retronym.jarcache.debug");
+
+    public static void premain(String agentArgs, Instrumentation inst) {
+        transform().installOn(inst);
     }
 
+    public static void installDynamically() {
+        transform().installOnByteBuddyAgent();
+    }
     private static Pattern cacheableRegex;
-    private static boolean DEBUG = Boolean.getBoolean("io.github.retronym.jarcache.debug");
 
     public static boolean isCacheable(Path path) {
         boolean result = isCacheableImpl(path);
@@ -44,16 +50,15 @@ public final class Agent {
         }
     }
 
-    public static AgentBuilder.Identified.Extendable getTransform() {
+    private static AgentBuilder.Identified.Extendable transform() {
         if (DEBUG)
             System.err.println("JARCACHE: Instrumenting with ByteBuddy");
 
         return new AgentBuilder.Default()
                 .ignore(ElementMatchers.none())
                 .with(AgentBuilder.RedefinitionStrategy.RETRANSFORMATION) // Allow retransformation
-                .with(DEBUG ? AgentBuilder.Listener.StreamWriting.toSystemError().withTransformationsOnly() : AgentBuilder.Listener.NoOp.INSTANCE)
-                .with(DEBUG ? AgentBuilder.Listener.StreamWriting.toSystemError().withErrorsOnly() : AgentBuilder.Listener.NoOp.INSTANCE)
-                .with(AgentBuilder.Listener.StreamWriting.toSystemOut().withErrorsOnly())
+                .with(DEBUG ? toSystemError().withTransformationsOnly() : AgentBuilder.Listener.NoOp.INSTANCE)
+                .with(DEBUG ? toSystemError().withErrorsOnly() : AgentBuilder.Listener.NoOp.INSTANCE)
                 .type(ElementMatchers.named("com.sun.tools.javac.file.FSInfo")).transform((builder, type, classLoader, module, protectionDomain) ->
                         builder)
                 .transform((builder, type, classLoader, module, protectionDomain) ->

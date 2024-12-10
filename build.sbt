@@ -19,15 +19,11 @@ val agent = project.settings(
 
 val demo = project.dependsOn(agent)
   .settings(
-    Compile/javaOptions += s"-javaagent:${(agent / Compile / assembly).value.getAbsolutePath}",
-    javacOptions ++= Seq(
-      "--add-modules", "jdk.compiler"
-    ),
-    javaOptions ++= javacOptions.value,
+    javacOptions ++= Seq("--add-modules", "jdk.compiler"),
+    javaOptions ++= javacOptions.value ++ Seq("-XX:+EnableDynamicAgentLoading"),
     libraryDependencies += "org.moditect.jfrunit" % "jfrunit-core" % "1.0.0.Alpha2",
     libraryDependencies += "org.junit.jupiter" % "junit-jupiter-api" % "5.7.0",
-    libraryDependencies ++= Seq(
-      "com.github.sbt.junit" % "jupiter-interface" % JupiterKeys.jupiterVersion.value % Test
-    ),
+    libraryDependencies += "com.github.sbt.junit" % "jupiter-interface" % JupiterKeys.jupiterVersion.value % Test,
+    libraryDependencies += "net.bytebuddy" % "byte-buddy-agent" % "1.15.10",
     fork := true
 )

@@ -1,5 +1,6 @@
 package demo;
 
+import io.github.retronym.jarcache.Agent;
 import jdk.jfr.consumer.RecordedEvent;
 import org.junit.jupiter.api.Test;
 import org.moditect.jfrunit.*;
@@ -32,6 +33,8 @@ public class JarCacheAgentTest {
     @Test
     @EnableEvent(value = FileRead.EVENT_NAME, stackTrace = EnableEvent.StacktracePolicy.INCLUDED)
     public void compileWithoutCaching() throws Exception {
+
+
         System.clearProperty("io.github.retronym.jarcache.cacheableRegex");
         testImpl();
     }
@@ -46,6 +49,8 @@ public class JarCacheAgentTest {
 
     private void testImpl() throws IOException {
         JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
+        net.bytebuddy.agent.ByteBuddyAgent.install();
+        Agent.installDynamically();
 
         JavaFileObject javaFileObject = new InMemoryJavaFileObject("HelloWorld", SOURCE_CODE);
         Path tempDir = Files.createTempDirectory("compileTest");
