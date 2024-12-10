@@ -12,13 +12,12 @@ import java.nio.file.spi.FileSystemProvider;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.regex.Pattern;
 
 /**
  * This class provides a {@link FileSystemProvider} that wraps the default {@link FileSystemProvider}
  * and caches the created {@link FileSystem} instances.
  */
-public class DeferredCloseJarFSProvider extends FileSystemProvider {
+public class CachingJarFSProvider extends FileSystemProvider {
     private static final FileSystemProvider delegate = lookupDelegate();
     private record CacheKey(Path path, Map<String, ?> env) {}
     static final ConcurrentHashMap<CacheKey, FileSystem> cache = new ConcurrentHashMap<>();
@@ -41,7 +40,7 @@ public class DeferredCloseJarFSProvider extends FileSystemProvider {
         if (Agent.isCacheable(path)) {
             CacheKey key = new CacheKey(path, env);
             FileSystem fs = cache.computeIfAbsent(key,
-                    k -> new DeferredCloseZipFileSystem(this, delegateNewFileSystem(path, env)));
+                    k -> new NeverCloseZipFileSystem(this, delegateNewFileSystem(path, env)));
             return fs;
         } else {
             return delegateNewFileSystem(path, env);

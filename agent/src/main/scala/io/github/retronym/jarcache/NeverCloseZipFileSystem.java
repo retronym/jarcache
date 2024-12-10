@@ -6,12 +6,12 @@ import java.nio.file.attribute.UserPrincipalLookupService;
 import java.nio.file.spi.FileSystemProvider;
 import java.util.Set;
 
-class DeferredCloseZipFileSystem extends FileSystem {
+class NeverCloseZipFileSystem extends FileSystem {
 
     private final FileSystemProvider provider;
     private final FileSystem delegate;
 
-    public DeferredCloseZipFileSystem(FileSystemProvider provider, FileSystem delegate) {
+    public NeverCloseZipFileSystem(FileSystemProvider provider, FileSystem delegate) {
         this.provider = provider;
         this.delegate = delegate;
     }

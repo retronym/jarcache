@@ -11,12 +11,12 @@ import java.util.concurrent.ConcurrentHashMap;
 /**
  * This class provides advice for the {@link com.sun.tools.javac.file.CacheFSInfo#getJarFSProvider()} method.
  *
- * It returns a singleton instance of {@link DeferredCloseJarFSProvider} which aggressively caches
+ * It returns a singleton instance of {@link CachingJarFSProvider} which aggressively caches
  * the created {@link java.nio.file.FileSystem} instances.
  */
 public class GetJarFSProviderAdvice {
     public static final ConcurrentHashMap<Path, Optional<List<Path>>> cache = new ConcurrentHashMap<>();
-    public static final DeferredCloseJarFSProvider provider = new DeferredCloseJarFSProvider();
+    public static final CachingJarFSProvider provider = new CachingJarFSProvider();
 
     @Advice.OnMethodEnter(skipOn = Advice.OnNonDefaultValue.class, inline = false)
     public static FileSystemProvider enter() {
