@@ -2,11 +2,7 @@ package io.github.retronym.jarcache;
 
 import net.bytebuddy.asm.Advice;
 
-import java.nio.file.Path;
 import java.nio.file.spi.FileSystemProvider;
-import java.util.List;
-import java.util.Optional;
-import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * This class provides advice for the {@link com.sun.tools.javac.file.CacheFSInfo#getJarFSProvider()} method.
@@ -15,7 +11,6 @@ import java.util.concurrent.ConcurrentHashMap;
  * the created {@link java.nio.file.FileSystem} instances.
  */
 public class GetJarFSProviderAdvice {
-    public static final ConcurrentHashMap<Path, Optional<List<Path>>> cache = new ConcurrentHashMap<>();
     public static final CachingJarFSProvider provider = new CachingJarFSProvider();
 
     @Advice.OnMethodEnter(skipOn = Advice.OnNonDefaultValue.class, inline = false)
